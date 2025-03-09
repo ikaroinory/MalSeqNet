@@ -9,6 +9,6 @@ temp.py
 study.py
 *.log
 
-data/original/**
-data/processed/**
-saves/**
+data/original
+data/processed
+saves
