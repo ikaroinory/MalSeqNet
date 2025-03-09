@@ -1,0 +1,14 @@
+.DS_Sotre
+
+.idea
+.vs
+__pycache__
+
+test.py
+temp.py
+study.py
+*.log
+
+data/original/**
+data/processed/**
+saves/**
