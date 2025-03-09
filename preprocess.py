@@ -1,21 +1,25 @@
 import json
 import pickle
 import sys
+from pathlib import Path
 
 import pandas as pd
 from loguru import logger
 
 divider = '-' * 100
 
-logger.remove()
-logger.add(
-    'train_log.log',
-    format='<g>{time:YYYY-MM-DD HH:mm:ss.SSS}</g> <r>|</r> <level>{level: <8}</level> <r>|</r> {message}',
-)
-logger.add(
-    sys.stdout,
-    format='<g>{time:YYYY-MM-DD HH:mm:ss.SSS}</g> <r>|</r> <level>{level: <8}</level> <r>|</r> {message}',
-)
+
+def init_logger():
+    logger.remove()
+    logger.add(
+        'train_log.log',
+        format='<g>{time:YYYY-MM-DD HH:mm:ss.SSS}</g> <r>|</r> <level>{level: <8}</level> <r>|</r> {message}',
+        mode='w'
+    )
+    logger.add(
+        sys.stdout,
+        format='<g>{time:YYYY-MM-DD HH:mm:ss.SSS}</g> <r>|</r> <level>{level: <8}</level> <r>|</r> {message}'
+    )
 
 
 def preprocess_api_list():
@@ -167,14 +171,8 @@ def preprocess():
     # logger.info(divider)
 
     preprocess_train_data(
-        'data/original/train_data_with_key_api_sequence_result.json',
+        'data/original/train_data_with_key_api_sequence_result_merge.json',
         'data/processed/train_data.pkl',
-    )
-    logger.info(divider)
-
-    preprocess_train_data(
-        'data/original/another_train_data_with_key_api_sequence_result.json',
-        'data/processed/another_train_data.pkl',
     )
     logger.info(divider)
 
@@ -185,5 +183,14 @@ def preprocess():
     logger.info(divider)
 
 
+def ensure_dir_exists():
+    Path('data/processed').mkdir(parents=True, exist_ok=True)
+
+
 if __name__ == '__main__':
+    init_logger()
+
+    logger.info('Data preprocessing...')
+
+    ensure_dir_exists()
     preprocess()
