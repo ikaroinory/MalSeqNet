@@ -322,10 +322,11 @@ if __name__ == '__main__':
     logger.add(
         'train_log.log',
         format='<g>{time:YYYY-MM-DD HH:mm:ss.SSS}</g> <r>|</r> <level>{level: <8}</level> <r>|</r> {message}',
+        mode='w'
     )
     logger.add(
         sys.stdout,
-        format='<g>{time:YYYY-MM-DD HH:mm:ss.SSS}</g> <r>|</r> <level>{level: <8}</level> <r>|</r> {message}',
+        format='<g>{time:YYYY-MM-DD HH:mm:ss.SSS}</g> <r>|</r> <level>{level: <8}</level> <r>|</r> {message}'
     )
 
     set_seed(args.seed)
