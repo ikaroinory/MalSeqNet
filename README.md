@@ -32,3 +32,10 @@ python preprocess.py
 ```bash
 bash evaluate.sh
 ```
+
+该脚本将依次输出：
+
+- 在Android7.1下不使用关键子序列的准确率
+- 在Android9下不使用关键子序列的准确率
+- 在Android7.1下使用关键子序列的准确率
+- 在Android9下使用关键子序列的准确率
