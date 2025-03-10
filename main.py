@@ -206,17 +206,24 @@ def train(train_loader: DataLoader, test_loader: DataLoader, model: Module, loss
     logger.info(f'Accuracy: {best_epoch_accuracy * 100:.2f}%')
 
 
-def evaluate(test_loader: DataLoader, model: Module, loss_fn: Module, device: str) -> None:
+def evaluate(test_loader1: DataLoader, test_loader2: DataLoader, model: Module, loss_fn: Module, device: str) -> None:
     accuracy_list = []
 
     for _ in tqdm(range(10)):
-        _, accuracy = evaluate_epoch(test_loader, model, loss_fn, device)
+        _, accuracy = evaluate_epoch(test_loader1, model, loss_fn, device)
 
         accuracy_list.append(accuracy)
 
-    logger.info(f'Max Accuracy: {max(accuracy_list) * 100:.2f}%')
-    logger.info(f'Min Accuracy: {min(accuracy_list) * 100:.2f}%')
-    logger.info(f'Mean Accuracy: {sum(accuracy_list) / len(accuracy_list) * 100:.2f}%')
+    logger.info(f'Accuracy in Android 7.1: {sum(accuracy_list) / len(accuracy_list) * 100:.2f}%')
+
+    accuracy_list = []
+
+    for _ in tqdm(range(10)):
+        _, accuracy = evaluate_epoch(test_loader2, model, loss_fn, device)
+
+        accuracy_list.append(accuracy)
+
+    logger.info(f'Accuracy in Android 9: {sum(accuracy_list) / len(accuracy_list) * 100:.2f}%')
 
 
 def main():
@@ -262,7 +269,7 @@ def main():
         train(train_loader, test_loader, model, loss_fn, optimizer, args.epochs, 'cuda')
     else:
         logger.info('Evaluate.....')
-        evaluate(get_another_env_data_loader(args.batch_size), model, loss_fn, 'cuda')
+        evaluate(test_loader, get_another_env_data_loader(args.batch_size), model, loss_fn, 'cuda')
 
 
 if __name__ == '__main__':
