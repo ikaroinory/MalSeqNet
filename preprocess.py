@@ -9,7 +9,7 @@ from loguru import logger
 divider = '-' * 100
 
 
-def init_logger():
+def init_logger() -> None:
     logger.remove()
     logger.add(
         'train_log.log',
@@ -22,7 +22,7 @@ def init_logger():
     )
 
 
-def preprocess_api_list():
+def preprocess_api_list() -> None:
     logger.info('Parsing API list...')
 
     with open('data/original/api_list.json', 'r') as file:
@@ -41,7 +41,7 @@ def preprocess_api_list():
     logger.info('Saved API list: data/processed/api_list.json')
 
 
-def preprocess_api_index_mapping():
+def preprocess_api_index_mapping() -> None:
     logger.info('Parsing API mapping...')
 
     with open('data/processed/api_list.json', 'r') as file:
@@ -55,7 +55,7 @@ def preprocess_api_index_mapping():
     logger.info('Saved API mapping: data/processed/api_index_mapping.pkl')
 
 
-def preprocess_app_api_list_label():
+def preprocess_app_api_list_label() -> None:
     logger.info('Loading API mapping......')
     with open('data/processed/api_index_mapping.pkl', 'rb') as file:
         api_index_mapping = pickle.load(file)
@@ -83,7 +83,7 @@ def preprocess_app_api_list_label():
     logger.info('Saved API mapping: data/processed/train_data.pkl')
 
 
-def preprocess_train_data(data_path: str, output_path: str):
+def preprocess_train_data(data_path: str, output_path: str) -> None:
     def padding(df: pd.DataFrame, column_name: str):
         max_len = max(df[column_name].apply(len))
         df[column_name] = df[column_name].apply(lambda x: x + [0] * (max_len - len(x)))
@@ -158,7 +158,7 @@ def preprocess_train_data(data_path: str, output_path: str):
     logger.info(f'Saved train data: {output_path}')
 
 
-def preprocess():
+def preprocess() -> None:
     logger.info(divider)
 
     preprocess_api_list()
@@ -183,7 +183,7 @@ def preprocess():
     logger.info(divider)
 
 
-def ensure_dir_exists():
+def ensure_dir_exists() -> None:
     Path('data/processed').mkdir(parents=True, exist_ok=True)
 
 

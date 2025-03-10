@@ -7,16 +7,16 @@ from models.TransformerModel import TransformerModel
 class Classifier(nn.Module):
     def __init__(
         self,
-        input_dim,
-        embedding_dim,
-        d_model,
-        nhead,
-        num_layers,
-        dim_feedforward,
-        normal_sequence_max_len,
-        abnormal_sequence_max_len,
-        x_sequence_max_len,
-        dropout
+        input_dim: int,
+        embedding_dim: int,
+        d_model: int,
+        nhead: int,
+        num_layers: int,
+        dim_feedforward: int,
+        normal_sequence_max_len: int,
+        abnormal_sequence_max_len: int,
+        x_sequence_max_len: int,
+        dropout: float
     ):
         super(Classifier, self).__init__()
         self.normal_encoder = TransformerModel(
@@ -57,7 +57,7 @@ class Classifier(nn.Module):
 
         self.fc = nn.Linear(embedding_dim * 3, 1)
 
-    def forward(self, x, normal_key_api_sequence, abnormal_key_api_sequence):
+    def forward(self, x: torch.Tensor, normal_key_api_sequence: torch.Tensor, abnormal_key_api_sequence: torch.Tensor):
         normal_embedding = self.normal_encoder(normal_key_api_sequence)
         normal_embedding = self.normal_embedding_relu(normal_embedding)
 

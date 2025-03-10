@@ -1,10 +1,8 @@
 import argparse
 import json
-import os
 import pickle
 import random
 import sys
-from datetime import datetime
 
 import numpy as np
 import pandas as pd
@@ -17,7 +15,7 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 from APIDataset import APIDataset
-from models import Classifier, ClassifierTransformer, TransformerModel
+from models import Classifier, TransformerModel
 
 
 def parse_args():
@@ -43,7 +41,7 @@ def parse_args():
 args = parse_args()
 
 
-def set_seed(seed):
+def set_seed(seed: int) -> None:
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
     torch.manual_seed(seed)
@@ -58,26 +56,17 @@ def get_api_count() -> int:
     return len(api_list)
 
 
-def get_data_loader(batch_size: int, test_size: float, seed: int):
+def get_data_loader(batch_size: int, test_size: float, seed: int) -> tuple[DataLoader, DataLoader]:
     with open('data/processed/train_data.pkl', 'rb') as file:
         df_train_data = pickle.load(file)
         df_train_data = pd.DataFrame(
             df_train_data,
-            columns=[
-                'api_sequence',
-                'normal_key_api_sequence',
-                'abnormal_key_api_sequence',
-                'label',
-            ],
+            columns=['api_sequence', 'normal_key_api_sequence', 'abnormal_key_api_sequence', 'label']
         )
 
     x = np.array(df_train_data['api_sequence'].tolist())
-    normal_key_api_sequence = np.array(
-        df_train_data['normal_key_api_sequence'].tolist()
-    )
-    abnormal_key_api_sequence = np.array(
-        df_train_data['abnormal_key_api_sequence'].tolist()
-    )
+    normal_key_api_sequence = np.array(df_train_data['normal_key_api_sequence'].tolist())
+    abnormal_key_api_sequence = np.array(df_train_data['abnormal_key_api_sequence'].tolist())
     y = np.array(df_train_data['label'].tolist())
 
     (
@@ -98,12 +87,8 @@ def get_data_loader(batch_size: int, test_size: float, seed: int):
         random_state=seed,
     )
 
-    train_dataset = APIDataset(
-        x_train, normal_key_api_sequence_train, abnormal_key_api_sequence_train, y_train
-    )
-    test_dataset = APIDataset(
-        x_test, normal_key_api_sequence_test, abnormal_key_api_sequence_test, y_test
-    )
+    train_dataset = APIDataset(x_train, normal_key_api_sequence_train, abnormal_key_api_sequence_train, y_train)
+    test_dataset = APIDataset(x_test, normal_key_api_sequence_test, abnormal_key_api_sequence_test, y_test)
 
     return (
         DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=0),
@@ -111,26 +96,17 @@ def get_data_loader(batch_size: int, test_size: float, seed: int):
     )
 
 
-def get_another_env_data_loader(batch_size: int):
+def get_another_env_data_loader(batch_size: int) -> DataLoader:
     with open('data/processed/another_env_train_data.pkl', 'rb') as file:
         df_train_data = pickle.load(file)
         df_train_data = pd.DataFrame(
             df_train_data,
-            columns=[
-                'api_sequence',
-                'normal_key_api_sequence',
-                'abnormal_key_api_sequence',
-                'label',
-            ],
+            columns=['api_sequence', 'normal_key_api_sequence', 'abnormal_key_api_sequence', 'label']
         )
 
     x = np.array(df_train_data['api_sequence'].tolist())
-    normal_key_api_sequence = np.array(
-        df_train_data['normal_key_api_sequence'].tolist()
-    )
-    abnormal_key_api_sequence = np.array(
-        df_train_data['abnormal_key_api_sequence'].tolist()
-    )
+    normal_key_api_sequence = np.array(df_train_data['normal_key_api_sequence'].tolist())
+    abnormal_key_api_sequence = np.array(df_train_data['abnormal_key_api_sequence'].tolist())
     y = np.array(df_train_data['label'].tolist())
 
     dataset = APIDataset(x, normal_key_api_sequence, abnormal_key_api_sequence, y)
@@ -138,9 +114,7 @@ def get_another_env_data_loader(batch_size: int):
     return DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=0)
 
 
-def train_epoch(
-    iterator: DataLoader, model: Module, loss_fn: Module, optimizer, device: str
-):
+def train_epoch(iterator: DataLoader, model: Module, loss_fn: Module, optimizer, device: str) -> float:
     model.to(device)
 
     model.train()
@@ -153,7 +127,7 @@ def train_epoch(
 
         optimizer.zero_grad()
 
-        if isinstance(model, ClassifierTransformer) or isinstance(model, Classifier):
+        if isinstance(model, Classifier):
             output = model(x, normal_key_api_sequence, abnormal_key_api_sequence)
         else:
             output = model(x)
@@ -168,7 +142,7 @@ def train_epoch(
     return total_loss / len(iterator)
 
 
-def evaluate_epoch(iterator: DataLoader, model: Module, loss_fn: Module, device: str):
+def evaluate_epoch(iterator: DataLoader, model: Module, loss_fn: Module, device: str) -> tuple[float, float]:
     model.to(device)
 
     model.eval()
@@ -183,9 +157,7 @@ def evaluate_epoch(iterator: DataLoader, model: Module, loss_fn: Module, device:
             abnormal_key_api_sequence = abnormal_key_api_sequence.to(device)
             y = y.to(device)
 
-            if isinstance(model, ClassifierTransformer) or isinstance(
-                model, Classifier
-            ):
+            if isinstance(model, Classifier):
                 output = model(x, normal_key_api_sequence, abnormal_key_api_sequence)
             else:
                 output = model(x)
@@ -194,22 +166,12 @@ def evaluate_epoch(iterator: DataLoader, model: Module, loss_fn: Module, device:
 
             total_loss += loss.item()
             # accuracy += (torch.sum(y_hat == y).item() / output.shape[0])
-            accuracy += (
-                torch.sum((output >= 0.5).squeeze() == y).item() / output.shape[0]
-            )
+            accuracy += (torch.sum((output >= 0.5).squeeze() == y).item() / output.shape[0])
 
     return total_loss / len(iterator), accuracy / len(iterator)
 
 
-def train(
-    train_loader: DataLoader,
-    test_loader: DataLoader,
-    model: Module,
-    loss_fn: Module,
-    optimizer,
-    epochs: int,
-    device: str,
-):
+def train(train_loader: DataLoader, test_loader: DataLoader, model: Module, loss_fn: Module, optimizer, epochs: int, device: str) -> None:
     best_epoch = -1
     best_epoch_loss = float('inf')
     best_epoch_accuracy = 0
@@ -243,15 +205,11 @@ def train(
     logger.info(f'Loss: {best_epoch_loss:.4f}')
     logger.info(f'Accuracy: {best_epoch_accuracy * 100:.2f}%')
 
-    file_name = f'model_{datetime.now().strftime("%Y%m%d%H%M%S")}.pth'
-    # os.rename(f'saves/model.pth', f'saves/{file_name}')
-    # logger.info(f'Saved model to saves/{file_name}')
 
-
-def evaluate(test_loader: DataLoader, model: Module, loss_fn: Module, device: str):
+def evaluate(test_loader: DataLoader, model: Module, loss_fn: Module, device: str) -> None:
     accuracy_list = []
 
-    for epoch in tqdm(range(10)):
+    for _ in tqdm(range(10)):
         _, accuracy = evaluate_epoch(test_loader, model, loss_fn, device)
 
         accuracy_list.append(accuracy)
@@ -268,17 +226,7 @@ def main():
         batch_size=args.batch_size, test_size=args.test_size, seed=args.seed
     )
 
-    # 25152: 最大序列长度
-    # 216: 所有子序列的长度
     if args.key_subsequence:
-        # model = ClassifierTransformer(
-        #     input_dim=get_api_count() + 1, output_dim=1,
-        #     d_model=args.d_model,
-        #     nhead=args.nhead,
-        #     num_layers=args.num_layers, dim_feedforward=args.dim_feedforward,
-        #     max_len=5000,
-        #     dropout=args.dropout
-        # )
         model = Classifier(
             input_dim=get_api_count() + 1,
             embedding_dim=args.embedding_dim,
