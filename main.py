@@ -4,6 +4,7 @@ import pickle
 import random
 import sys
 from datetime import datetime
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -295,9 +296,11 @@ def main():
 
 
 if __name__ == '__main__':
+    Path('logs').mkdir(parents=True, exist_ok=True)
+
     logger.remove()
     logger.add(
-        f'train_log_{CURRENT_TIME}.log',
+        f'logs/train_log_{CURRENT_TIME}.log',
         format='<g>{time:YYYY-MM-DD HH:mm:ss.SSS}</g> <r>|</r> <level>{level: <8}</level> <r>|</r> {message}',
         mode='w'
     )
