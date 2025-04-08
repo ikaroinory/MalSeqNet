@@ -45,6 +45,7 @@ def set_seed(seed: int) -> None:
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
     torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
     np.random.seed(seed)
     random.seed(seed)
@@ -90,13 +91,15 @@ def get_data_loader(batch_size: int, test_size: float, seed: int) -> tuple[DataL
     train_dataset = APIDataset(x_train, normal_key_api_sequence_train, abnormal_key_api_sequence_train, y_train)
     test_dataset = APIDataset(x_test, normal_key_api_sequence_test, abnormal_key_api_sequence_test, y_test)
 
-    return (
-        DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=0),
-        DataLoader(test_dataset, batch_size=batch_size, shuffle=False, num_workers=0),
-    )
+    set_seed(seed)
+    train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=0)
+    set_seed(seed)
+    test_dataloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, num_workers=0)
+
+    return train_dataloader, test_dataloader
 
 
-def get_api26_data_loader(batch_size: int) -> DataLoader:
+def get_api26_data_loader(batch_size: int, seed: int) -> DataLoader:
     with open('data/processed/api26.pkl', 'rb') as file:
         df_train_data = pickle.load(file)
         df_train_data = pd.DataFrame(
@@ -111,10 +114,13 @@ def get_api26_data_loader(batch_size: int) -> DataLoader:
 
     dataset = APIDataset(x, normal_key_api_sequence, abnormal_key_api_sequence, y)
 
-    return DataLoader(dataset, batch_size=batch_size, shuffle=False, num_workers=0)
+    set_seed(seed)
+    dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False, num_workers=0)
+
+    return dataloader
 
 
-def get_api28_data_loader(batch_size: int) -> DataLoader:
+def get_api28_data_loader(batch_size: int, seed: int) -> DataLoader:
     with open('data/processed/api28.pkl', 'rb') as file:
         df_train_data = pickle.load(file)
         df_train_data = pd.DataFrame(
@@ -129,7 +135,10 @@ def get_api28_data_loader(batch_size: int) -> DataLoader:
 
     dataset = APIDataset(x, normal_key_api_sequence, abnormal_key_api_sequence, y)
 
-    return DataLoader(dataset, batch_size=batch_size, shuffle=False, num_workers=0)
+    set_seed(seed)
+    dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False, num_workers=0)
+
+    return dataloader
 
 
 def train_epoch(iterator: DataLoader, model: Module, loss_fn: Module, optimizer, device: str) -> float:
