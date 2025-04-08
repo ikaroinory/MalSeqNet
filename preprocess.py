@@ -171,14 +171,20 @@ def preprocess() -> None:
     # logger.info(divider)
 
     preprocess_train_data(
-        'data/original/train_data_with_key_api_sequence_result_merge.json',
-        'data/processed/train_data.pkl',
+        'data/original/api25.json',
+        'data/processed/api25.pkl',
     )
     logger.info(divider)
 
     preprocess_train_data(
-        'data/original/another_env_train_data_with_key_api_sequence_result.json',
-        'data/processed/another_env_train_data.pkl',
+        'data/original/api26.json',
+        'data/processed/api26.pkl',
+    )
+    logger.info(divider)
+
+    preprocess_train_data(
+        'data/original/api28.json',
+        'data/processed/api28.pkl',
     )
     logger.info(divider)
 

@@ -57,7 +57,7 @@ def get_api_count() -> int:
 
 
 def get_data_loader(batch_size: int, test_size: float, seed: int) -> tuple[DataLoader, DataLoader]:
-    with open('data/processed/train_data.pkl', 'rb') as file:
+    with open('data/processed/api25.pkl', 'rb') as file:
         df_train_data = pickle.load(file)
         df_train_data = pd.DataFrame(
             df_train_data,
@@ -96,8 +96,8 @@ def get_data_loader(batch_size: int, test_size: float, seed: int) -> tuple[DataL
     )
 
 
-def get_another_env_data_loader(batch_size: int) -> DataLoader:
-    with open('data/processed/another_env_train_data.pkl', 'rb') as file:
+def get_api26_data_loader(batch_size: int) -> DataLoader:
+    with open('data/processed/api26.pkl', 'rb') as file:
         df_train_data = pickle.load(file)
         df_train_data = pd.DataFrame(
             df_train_data,
@@ -111,7 +111,25 @@ def get_another_env_data_loader(batch_size: int) -> DataLoader:
 
     dataset = APIDataset(x, normal_key_api_sequence, abnormal_key_api_sequence, y)
 
-    return DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=0)
+    return DataLoader(dataset, batch_size=batch_size, shuffle=False, num_workers=0)
+
+
+def get_api28_data_loader(batch_size: int) -> DataLoader:
+    with open('data/processed/api28.pkl', 'rb') as file:
+        df_train_data = pickle.load(file)
+        df_train_data = pd.DataFrame(
+            df_train_data,
+            columns=['api_sequence', 'normal_key_api_sequence', 'abnormal_key_api_sequence', 'label']
+        )
+
+    x = np.array(df_train_data['api_sequence'].tolist())
+    normal_key_api_sequence = np.array(df_train_data['normal_key_api_sequence'].tolist())
+    abnormal_key_api_sequence = np.array(df_train_data['abnormal_key_api_sequence'].tolist())
+    y = np.array(df_train_data['label'].tolist())
+
+    dataset = APIDataset(x, normal_key_api_sequence, abnormal_key_api_sequence, y)
+
+    return DataLoader(dataset, batch_size=batch_size, shuffle=False, num_workers=0)
 
 
 def train_epoch(iterator: DataLoader, model: Module, loss_fn: Module, optimizer, device: str) -> float:
@@ -206,12 +224,10 @@ def train(train_loader: DataLoader, test_loader: DataLoader, model: Module, loss
     logger.info(f'Accuracy: {best_epoch_accuracy * 100:.2f}%')
 
 
-def evaluate(test_loader1: DataLoader, test_loader2: DataLoader, model: Module, loss_fn: Module, device: str) -> None:
-    _, accuracy = evaluate_epoch(test_loader1, model, loss_fn, device)
-    logger.info(f'Accuracy in Android 7.1: {accuracy * 100:.2f}%')
-
-    _, accuracy = evaluate_epoch(test_loader2, model, loss_fn, device)
-    logger.info(f'Accuracy in Android 9: {accuracy * 100:.2f}%')
+def evaluate(loader_list: list[tuple[str, DataLoader]], model: Module, loss_fn: Module, device: str) -> None:
+    for api, loader in loader_list:
+        _, accuracy = evaluate_epoch(loader, model, loss_fn, device)
+        logger.info(f'Accuracy in {api}: {accuracy * 100:.2f}%')
 
 
 def main():
@@ -257,7 +273,12 @@ def main():
         train(train_loader, test_loader, model, loss_fn, optimizer, args.epochs, 'cuda')
     else:
         logger.info('Evaluate.....')
-        evaluate(test_loader, get_another_env_data_loader(args.batch_size), model, loss_fn, 'cuda')
+        loader_list = [
+            ('api25', test_loader),
+            ('api26', get_api26_data_loader(args.batch_size)),
+            ('api28', get_api28_data_loader(args.batch_size))
+        ]
+        evaluate(loader_list, model, loss_fn, 'cuda')
 
 
 if __name__ == '__main__':
