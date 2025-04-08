@@ -1,10 +1,13 @@
 import json
 import pickle
 import sys
+from datetime import datetime
 from pathlib import Path
 
 import pandas as pd
 from loguru import logger
+
+CURRENT_TIME = datetime.now().strftime('%Y%m%d_%H%M%S')
 
 divider = '-' * 100
 
@@ -12,7 +15,7 @@ divider = '-' * 100
 def init_logger() -> None:
     logger.remove()
     logger.add(
-        'train_log.log',
+        f'logs/preprocess_{CURRENT_TIME}.log',
         format='<g>{time:YYYY-MM-DD HH:mm:ss.SSS}</g> <r>|</r> <level>{level: <8}</level> <r>|</r> {message}',
         mode='w'
     )

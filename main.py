@@ -297,10 +297,11 @@ def main():
 
 if __name__ == '__main__':
     Path('logs').mkdir(parents=True, exist_ok=True)
+    Path('saves').mkdir(parents=True, exist_ok=True)
 
     logger.remove()
     logger.add(
-        f'logs/train_log_{CURRENT_TIME}.log',
+        f'logs/{CURRENT_TIME}.log',
         format='<g>{time:YYYY-MM-DD HH:mm:ss.SSS}</g> <r>|</r> <level>{level: <8}</level> <r>|</r> {message}',
         mode='w'
     )
