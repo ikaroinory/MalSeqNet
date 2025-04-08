@@ -9,4 +9,5 @@ python main.py \
   --lr=0.0003 \
   --epochs=1000 \
   --seed=42 \
-  --early_stop=50
+  --early_stop=50 \
+  --key_subsequence

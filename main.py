@@ -285,6 +285,14 @@ def main():
     if not args.evaluate:
         logger.info('Train.....')
         train(train_loader, test_loader, model, loss_fn, optimizer, args.epochs, 'cuda')
+        model.load_state_dict(torch.load(f'saves/model_{CURRENT_TIME}.pth'))
+
+        logger.info('Evaluate.....')
+        loader_list = [
+            ('api26', get_api26_data_loader(args.batch_size)),
+            ('api28', get_api28_data_loader(args.batch_size))
+        ]
+        evaluate(loader_list, model, loss_fn, 'cuda')
     else:
         logger.info('Evaluate.....')
         loader_list = [
