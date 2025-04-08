@@ -1,4 +1,5 @@
 import argparse
+import copy
 import json
 import pickle
 import random
@@ -206,7 +207,7 @@ def train(train_loader: DataLoader, test_loader: DataLoader, model: Module, loss
     best_epoch = -1
     best_epoch_loss = float('inf')
     best_epoch_accuracy = 0
-    best_model = None
+    best_model = copy.deepcopy(model.state_dict())
     no_improvement_counter = 0
 
     for epoch in tqdm(range(epochs)):
@@ -224,7 +225,7 @@ def train(train_loader: DataLoader, test_loader: DataLoader, model: Module, loss
             best_epoch = epoch + 1
             best_epoch_loss = evaluate_loss
             best_epoch_accuracy = accuracy
-            torch.save(model.state_dict(), f'saves/model_{CURRENT_TIME}.pth')
+            best_model = copy.deepcopy(model.state_dict())
             no_improvement_counter = 0
         else:
             no_improvement_counter += 1
@@ -232,6 +233,8 @@ def train(train_loader: DataLoader, test_loader: DataLoader, model: Module, loss
         if no_improvement_counter >= args.early_stop:
             logger.info('Early stop.')
             break
+
+    torch.save(best_model, f'saves/model_{CURRENT_TIME}.pth')
 
     logger.info(f'Best epoch: {best_epoch}')
     logger.info(f'Loss: {best_epoch_loss:.4f}')
@@ -289,16 +292,16 @@ def main():
 
         logger.info('Evaluate.....')
         loader_list = [
-            ('api26', get_api26_data_loader(args.batch_size)),
-            ('api28', get_api28_data_loader(args.batch_size))
+            ('api26', get_api26_data_loader(args.batch_size, args.seed)),
+            ('api28', get_api28_data_loader(args.batch_size, args.seed))
         ]
         evaluate(loader_list, model, loss_fn, 'cuda')
     else:
         logger.info('Evaluate.....')
         loader_list = [
             ('api25', test_loader),
-            ('api26', get_api26_data_loader(args.batch_size)),
-            ('api28', get_api28_data_loader(args.batch_size))
+            ('api26', get_api26_data_loader(args.batch_size, args.seed)),
+            ('api28', get_api28_data_loader(args.batch_size, args.seed))
         ]
         evaluate(loader_list, model, loss_fn, 'cuda')
 
