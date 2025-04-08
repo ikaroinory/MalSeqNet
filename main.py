@@ -3,6 +3,7 @@ import json
 import pickle
 import random
 import sys
+from datetime import datetime
 
 import numpy as np
 import pandas as pd
@@ -16,6 +17,8 @@ from tqdm import tqdm
 
 from APIDataset import APIDataset
 from models import Classifier, TransformerModel
+
+CURRENT_TIME = datetime.now().strftime('%Y%m%d_%H%M%S')
 
 
 def parse_args():
@@ -202,6 +205,7 @@ def train(train_loader: DataLoader, test_loader: DataLoader, model: Module, loss
     best_epoch = -1
     best_epoch_loss = float('inf')
     best_epoch_accuracy = 0
+    best_model = None
     no_improvement_counter = 0
 
     for epoch in tqdm(range(epochs)):
@@ -219,7 +223,7 @@ def train(train_loader: DataLoader, test_loader: DataLoader, model: Module, loss
             best_epoch = epoch + 1
             best_epoch_loss = evaluate_loss
             best_epoch_accuracy = accuracy
-            torch.save(model.state_dict(), f'saves/model_{epoch + 1}.pth')
+            torch.save(model.state_dict(), f'saves/model_{CURRENT_TIME}.pth')
             no_improvement_counter = 0
         else:
             no_improvement_counter += 1
@@ -293,7 +297,7 @@ def main():
 if __name__ == '__main__':
     logger.remove()
     logger.add(
-        'train_log.log',
+        f'train_log_{CURRENT_TIME}.log',
         format='<g>{time:YYYY-MM-DD HH:mm:ss.SSS}</g> <r>|</r> <level>{level: <8}</level> <r>|</r> {message}',
         mode='w'
     )
