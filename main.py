@@ -292,16 +292,16 @@ def main():
 
         logger.info('Evaluate.....')
         loader_list = [
-            ('api26', get_api26_data_loader(args.batch_size, args.seed)),
-            ('api28', get_api28_data_loader(args.batch_size, args.seed))
+            ('API 26', get_api26_data_loader(args.batch_size, args.seed)),
+            ('API 28', get_api28_data_loader(args.batch_size, args.seed))
         ]
         evaluate(loader_list, model, loss_fn, 'cuda')
     else:
         logger.info('Evaluate.....')
         loader_list = [
-            ('api25', test_loader),
-            ('api26', get_api26_data_loader(args.batch_size, args.seed)),
-            ('api28', get_api28_data_loader(args.batch_size, args.seed))
+            ('API 25', test_loader),
+            ('API 26', get_api26_data_loader(args.batch_size, args.seed)),
+            ('API 28', get_api28_data_loader(args.batch_size, args.seed))
         ]
         evaluate(loader_list, model, loss_fn, 'cuda')
 
