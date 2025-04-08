@@ -193,6 +193,7 @@ def preprocess() -> None:
 
 
 def ensure_dir_exists() -> None:
+    Path('logs').mkdir(parents=True, exist_ok=True)
     Path('data/processed').mkdir(parents=True, exist_ok=True)
 
 
