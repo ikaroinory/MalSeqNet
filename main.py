@@ -189,7 +189,7 @@ def train(train_loader: DataLoader, test_loader: DataLoader, model: Module, loss
         logger.info(f'Accuracy: {accuracy * 100:.2f}%')
 
         if evaluate_loss < best_epoch_loss:
-            best_epoch = epoch + 1  # 记录最佳轮次
+            best_epoch = epoch + 1
             best_epoch_loss = evaluate_loss
             best_epoch_accuracy = accuracy
             torch.save(model.state_dict(), f'saves/model_{epoch + 1}.pth')
@@ -207,23 +207,11 @@ def train(train_loader: DataLoader, test_loader: DataLoader, model: Module, loss
 
 
 def evaluate(test_loader1: DataLoader, test_loader2: DataLoader, model: Module, loss_fn: Module, device: str) -> None:
-    accuracy_list = []
+    _, accuracy = evaluate_epoch(test_loader1, model, loss_fn, device)
+    logger.info(f'Accuracy in Android 7.1: {accuracy * 100:.2f}%')
 
-    for _ in tqdm(range(10)):
-        _, accuracy = evaluate_epoch(test_loader1, model, loss_fn, device)
-
-        accuracy_list.append(accuracy)
-
-    logger.info(f'Accuracy in Android 7.1: {sum(accuracy_list) / len(accuracy_list) * 100:.2f}%')
-
-    accuracy_list = []
-
-    for _ in tqdm(range(10)):
-        _, accuracy = evaluate_epoch(test_loader2, model, loss_fn, device)
-
-        accuracy_list.append(accuracy)
-
-    logger.info(f'Accuracy in Android 9: {sum(accuracy_list) / len(accuracy_list) * 100:.2f}%')
+    _, accuracy = evaluate_epoch(test_loader2, model, loss_fn, device)
+    logger.info(f'Accuracy in Android 9: {accuracy * 100:.2f}%')
 
 
 def main():
