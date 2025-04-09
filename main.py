@@ -3,7 +3,6 @@ import copy
 import json
 import pickle
 import random
-import sys
 from datetime import datetime
 from pathlib import Path
 
@@ -19,6 +18,7 @@ from tqdm import tqdm
 
 from APIDataset import APIDataset
 from models import Classifier, TransformerModel
+from utils import init_logger
 
 CURRENT_TIME = datetime.now().strftime('%Y%m%d_%H%M%S')
 
@@ -306,20 +306,15 @@ def main():
         evaluate(loader_list, model, loss_fn, 'cuda')
 
 
-if __name__ == '__main__':
+def ensure_dir_exists() -> None:
     Path('logs').mkdir(parents=True, exist_ok=True)
     Path('saves').mkdir(parents=True, exist_ok=True)
 
-    logger.remove()
-    logger.add(
-        f'logs/{CURRENT_TIME}.log',
-        format='<g>{time:YYYY-MM-DD HH:mm:ss.SSS}</g> <r>|</r> <level>{level: <8}</level> <r>|</r> {message}',
-        mode='w'
-    )
-    logger.add(
-        sys.stdout,
-        format='<g>{time:YYYY-MM-DD HH:mm:ss.SSS}</g> <r>|</r> <level>{level: <8}</level> <r>|</r> {message}'
-    )
+
+if __name__ == '__main__':
+    ensure_dir_exists()
+
+    init_logger(f'logs/{CURRENT_TIME}.log')
 
     set_seed(args.seed)
 

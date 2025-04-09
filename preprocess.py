@@ -1,28 +1,13 @@
 import json
 import pickle
-import sys
-from datetime import datetime
 from pathlib import Path
 
 import pandas as pd
 from loguru import logger
 
-CURRENT_TIME = datetime.now().strftime('%Y%m%d_%H%M%S')
+from utils import init_logger
 
 divider = '-' * 100
-
-
-def init_logger() -> None:
-    logger.remove()
-    logger.add(
-        f'logs/preprocess_{CURRENT_TIME}.log',
-        format='<g>{time:YYYY-MM-DD HH:mm:ss.SSS}</g> <r>|</r> <level>{level: <8}</level> <r>|</r> {message}',
-        mode='w'
-    )
-    logger.add(
-        sys.stdout,
-        format='<g>{time:YYYY-MM-DD HH:mm:ss.SSS}</g> <r>|</r> <level>{level: <8}</level> <r>|</r> {message}'
-    )
 
 
 def preprocess_api_list() -> None:
@@ -56,34 +41,6 @@ def preprocess_api_index_mapping() -> None:
         file.write(pickle.dumps(api_index_mapping))
 
     logger.info('Saved API mapping: data/processed/api_index_mapping.pkl')
-
-
-def preprocess_app_api_list_label() -> None:
-    logger.info('Loading API mapping......')
-    with open('data/processed/api_index_mapping.pkl', 'rb') as file:
-        api_index_mapping = pickle.load(file)
-
-    logger.info('Parsing train data......')
-    data = []
-    with open('data/original/apis_with_tags_for_train.txt', 'r') as file:
-        # with open('data/original/api_sequence_label.txt', 'r') as file:
-        for line in file:
-            line = line.strip()[1:-1]
-
-            label = int(line[-1])
-
-            line = line[:-3]
-
-            api_sequence = json.loads(line)
-            api_sequence = [api_index_mapping[api] for api in api_sequence]
-            data.append((api_sequence, label))
-
-    logger.info(f'Total train data: {len(data)}')
-
-    with open('data/processed/train_data.pkl', 'wb') as file:
-        file.write(pickle.dumps(data))
-
-    logger.info('Saved API mapping: data/processed/train_data.pkl')
 
 
 def preprocess_train_data(data_path: str, output_path: str) -> None:
@@ -170,9 +127,6 @@ def preprocess() -> None:
     preprocess_api_index_mapping()
     logger.info(divider)
 
-    # preprocess_app_api_list_label()
-    # logger.info(divider)
-
     preprocess_train_data(
         'data/original/api25.json',
         'data/processed/api25.pkl',
@@ -198,9 +152,9 @@ def ensure_dir_exists() -> None:
 
 
 if __name__ == '__main__':
+    ensure_dir_exists()
+
     init_logger()
 
     logger.info('Data preprocessing...')
-
-    ensure_dir_exists()
     preprocess()
