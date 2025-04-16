@@ -288,7 +288,7 @@ def main():
     if not args.evaluate:
         logger.info('Train.....')
         train(train_loader, test_loader, model, loss_fn, optimizer, args.epochs, 'cuda')
-        model.load_state_dict(torch.load(f'saves/model_{CURRENT_TIME}.pth'))
+        model.load_state_dict(torch.load(f'saves/model_{CURRENT_TIME}.pth', weights_only=True))
 
         logger.info('Evaluate.....')
         loader_list = [

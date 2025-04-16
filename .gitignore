@@ -4,11 +4,12 @@
 .vs
 __pycache__
 
-test.py
-temp.py
-study.py
-*.log
-
 data/original
 data/processed
-saves
+
+logs/*
+!logs/20250416_133801.log
+
+saves/*
+!saves/model_20250416_133801.pth
+
