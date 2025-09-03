@@ -90,7 +90,7 @@ def get_data_loader(batch_size: int, test_size: float, seed: int) -> tuple[DataL
         abnormal_key_api_sequence,
         y,
         test_size=test_size,
-        random_state=seed,
+        random_state=seed
     )
 
     train_dataset = APIDataset(x_train, normal_key_api_sequence_train, abnormal_key_api_sequence_train, y_train)
@@ -164,7 +164,7 @@ def train_epoch(iterator: DataLoader, model: Module, loss_fn: Module, optimizer,
         else:
             output = model(x)
 
-        loss = loss_fn(output.squeeze(), y)
+        loss = loss_fn(output.squeeze(), y.squeeze())
 
         loss.backward()
         optimizer.step()
@@ -244,6 +244,7 @@ def train(train_loader: DataLoader, test_loader: DataLoader, model: Module, loss
 def evaluate(loader_list: list[tuple[str, DataLoader]], model: Module, loss_fn: Module, device: str) -> None:
     for api, loader in loader_list:
         _, accuracy = evaluate_epoch(loader, model, loss_fn, device)
+        # logger.info(f'Accuracy in {api}: {accuracy * 100:.2f}%')
         logger.info(f'Accuracy in {api}: {accuracy * 100:.2f}%')
 
 
@@ -256,27 +257,25 @@ def main():
 
     if args.key_subsequence:
         model = Classifier(
-            input_dim=get_api_count() + 1,
-            embedding_dim=args.embedding_dim,
-            d_model=args.d_model,
+            d_input=get_api_count() + 1,
+            d_embedding=args.embedding_dim,
+            d_hidden=args.d_model,
             nhead=args.nhead,
             num_layers=args.num_layers,
-            dim_feedforward=args.dim_feedforward,
+            d_ff=args.dim_feedforward,
             x_sequence_max_len=1000,
             normal_sequence_max_len=5000,
-            abnormal_sequence_max_len=3000,
-            dropout=args.dropout,
+            abnormal_sequence_max_len=3000
         )
     else:
         model = TransformerModel(
-            input_dim=get_api_count() + 1,
-            output_dim=1,
-            d_model=args.d_model,
-            nhead=args.nhead,
+            d_input=get_api_count() + 1,
+            d_output=1,
+            d_hidden=args.d_model,
+            num_heads=args.nhead,
             num_layers=args.num_layers,
-            dim_feedforward=args.dim_feedforward,
-            max_len=5000,
-            dropout=args.dropout,
+            d_ff=args.dim_feedforward,
+            max_len=5000
         )
 
     if args.evaluate:
@@ -298,11 +297,18 @@ def main():
         evaluate(loader_list, model, loss_fn, 'cuda')
     else:
         logger.info('Evaluate.....')
-        loader_list = [
-            ('API 25', test_loader),
-            ('API 26', get_api26_data_loader(args.batch_size, args.seed)),
-            ('API 28', get_api28_data_loader(args.batch_size, args.seed))
-        ]
+        if args.key_subsequence:
+            loader_list = [
+                ('API 25', test_loader),
+                ('API 26', get_api26_data_loader(args.batch_size, args.seed)),
+                ('API 28', get_api28_data_loader(args.batch_size, args.seed))
+            ]
+        else:
+            loader_list = [
+                ('API 25', test_loader),
+                ('API 26', get_api26_data_loader(args.batch_size, args.seed)),
+                ('API 28', get_api28_data_loader(args.batch_size, args.seed))
+            ]
         evaluate(loader_list, model, loss_fn, 'cuda')
 
 

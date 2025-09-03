@@ -8,27 +8,28 @@ from models.PositionalEncoding import PositionalEncoding
 class TransformerModel(nn.Module):
     def __init__(
         self,
-        input_dim: int,
-        output_dim: int,
-        d_model: int,
-        nhead: int,
+        d_input: int,
+        d_output: int,
+        d_hidden: int,
+        num_heads: int,
         num_layers: int,
-        dim_feedforward: int,
+        d_ff: int,
         max_len: int,
-        dropout: float
+        dropout: float = 0
     ):
         super(TransformerModel, self).__init__()
 
-        self.embedding = nn.Embedding(input_dim, d_model)
+        self.embedding = nn.Embedding(d_input, d_hidden)
 
-        self.pos_encoder = PositionalEncoding(d_model, dropout, max_len)
+        self.pos_encoder = PositionalEncoding(d_hidden, dropout, max_len)
 
-        encoder_layers = nn.TransformerEncoderLayer(d_model=d_model, nhead=nhead, dim_feedforward=dim_feedforward, dropout=dropout)
+        self.transformer_encoder = nn.TransformerEncoder(
+            nn.TransformerEncoderLayer(d_model=d_hidden, nhead=num_heads, dim_feedforward=d_ff, dropout=dropout),
+            num_layers=num_layers
+        )
 
-        self.transformer_encoder = nn.TransformerEncoder(encoder_layers, num_layers=num_layers)
-
-        self.fc = nn.Linear(d_model, output_dim)
-        self.d_model = d_model
+        self.fc = nn.Linear(d_hidden, d_output)
+        self.d_model = d_hidden
 
     def forward(self, src: torch.Tensor):
         src = src.permute(1, 0)
