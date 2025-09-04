@@ -193,12 +193,15 @@ def evaluate_epoch(iterator: DataLoader, model: Module, loss_fn: Module, device:
                 output = model(x, normal_key_api_sequence, abnormal_key_api_sequence)
             else:
                 output = model(x)
+            probs = torch.sigmoid(output)
+            preds = (probs >= 0.5).long()
 
             loss = loss_fn(output.squeeze(), y)
 
             total_loss += loss.item()
             # accuracy += (torch.sum(y_hat == y).item() / output.shape[0])
-            accuracy += (torch.sum((output >= 0.5).squeeze() == y).item() / output.shape[0])
+            accuracy += (preds == y).float().mean().item()
+
 
     return total_loss / len(iterator), accuracy / len(iterator)
 
@@ -279,7 +282,7 @@ def main():
         )
 
     if args.evaluate:
-        model.load_state_dict(torch.load(f'{args.model_name}'))
+        model.load_state_dict(torch.load(f'{args.model_name}', weights_only=True))
 
     loss_fn = BCEWithLogitsLoss()
     optimizer = Adam(model.parameters(), lr=args.lr)

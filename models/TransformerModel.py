@@ -1,4 +1,3 @@
-import numpy as np
 import torch
 from torch import nn
 
@@ -34,7 +33,7 @@ class TransformerModel(nn.Module):
     def forward(self, src: torch.Tensor):
         src = src.permute(1, 0)
 
-        src = self.embedding(src) * np.sqrt(self.d_model)
+        src = self.embedding(src) * torch.sqrt(torch.tensor(self.d_model, device=src.device))
 
         src = self.pos_encoder(src)
 
@@ -45,7 +44,5 @@ class TransformerModel(nn.Module):
         output = torch.mean(output, dim=1)
 
         output = self.fc(output)
-
-        output = torch.sigmoid(output)
 
         return output
