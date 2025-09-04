@@ -23,7 +23,7 @@ class TransformerModel(nn.Module):
         self.pos_encoder = PositionalEncoding(d_hidden, dropout, max_len)
 
         self.transformer_encoder = nn.TransformerEncoder(
-            nn.TransformerEncoderLayer(d_model=d_hidden, nhead=num_heads, dim_feedforward=d_ff, dropout=dropout),
+            nn.TransformerEncoderLayer(d_model=d_hidden, nhead=num_heads, dim_feedforward=d_ff, dropout=dropout, batch_first=True),
             num_layers=num_layers
         )
 
@@ -31,15 +31,11 @@ class TransformerModel(nn.Module):
         self.d_model = d_hidden
 
     def forward(self, src: torch.Tensor):
-        src = src.permute(1, 0)
-
         src = self.embedding(src) * torch.sqrt(torch.tensor(self.d_model, device=src.device))
 
         src = self.pos_encoder(src)
 
         output = self.transformer_encoder(src)
-
-        output = output.permute(1, 0, 2)
 
         output = torch.mean(output, dim=1)
 
